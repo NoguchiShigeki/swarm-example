@@ -12,7 +12,6 @@ import re
 import datetime
 from pathlib import Path
 
-
 # Load environment variables
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -41,7 +40,14 @@ try:
         print("Provided OpenAI API Key is Valid✅")
 except openai.AuthenticationError:
     print("Provided OpenAI API Key is Invalid❌")
-    sys.exit(1)
+    while True:
+        try:
+            api_key = input("Enter OpenAI API Key Here: ")
+            if not api_key:
+                raise ValueError("OpenAI API Key is not typed.")
+            break
+        except Exception as e:
+            print(f"Input Error: {e}\nType OpenAI API Key again.")
 except openai.RateLimitError:
     print("Provided API Key has reached the rate limit.")
     sys.exit(1)
@@ -50,15 +56,6 @@ except openai.APIConnectionError:
     sys.exit(1)
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
-    sys.exit(1)
-
-# Making a directory to store the output files
-timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-output_directory = Path(f"output_{timestamp}")
-try:
-    output_directory.mkdir(parents=True, exist_ok=True)
-except Exception as e:
-    print(f"An error occurred while creating the output directory: {e}")
     sys.exit(1)
 
 client = Swarm()
@@ -71,6 +68,15 @@ except FileNotFoundError:
     print("File not found: There is no such a file \"test.jsonl\" in the current directory where this script exists")
     sys.exit(1)
 
+# Making a directory to store the output files
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+output_directory = Path(f"output_{timestamp}")
+try:
+    output_directory.mkdir(parents=True, exist_ok=True)
+except Exception as e:
+    print(f"An error occurred while creating the output directory: {e}")
+    sys.exit(1)
+
 # Declare the question and answer list
 questions = [item["question"] for item in data]
 answers = [item["answer"] for item in data]
@@ -78,8 +84,9 @@ answers = [item["answer"] for item in data]
 # Ask the user to select a mode
 while True:
     try:
-        mode = int(input("Select a mode: \n[1] Run a 1k math benchmark (grade-school-math by OpenAI)\n[2] User prompt mode\nSelect the mode: "))
-        if mode not in [1,2]:
+        mode = int(input(
+            "Select a mode: \n[1] Run a 1k math benchmark (grade-school-math by OpenAI)\n[2] User prompt mode\nSelect the mode: "))
+        if mode not in [1, 2]:
             raise ValueError("Mode must be [1] or [2]")
         break
     except ValueError as e:
@@ -104,7 +111,7 @@ while True:
     except ValueError as e:
         print(f"Input Error: {e} \nEnter the number of debate rounds again")
 
-if mode==1:
+if mode == 1:
     while True:
         try:
             benchmark_length = int(input("Enter the number of benchmark questions you want to run: "))
@@ -118,10 +125,11 @@ if mode==1:
     answers = answers[:benchmark_length]
 
 # Ask the user if they want to run a comparative experiment
-if mode==1:
+if mode == 1:
     while True:
         try:
-            comparative_experiment = input("Do you want to run a comparative experiment? (Run and Compare with a Single Agent Zero-shot) (y/n): ")
+            comparative_experiment = input(
+                "Do you want to run a comparative experiment? (Run and Compare with a Single Agent Zero-shot) (y/n): ")
             if comparative_experiment in ["Y", "y"]:
                 ce_flag = True
             elif comparative_experiment in ["N", "n"]:
@@ -133,7 +141,7 @@ if mode==1:
             print(f"Input Error: {e} \nType in your intention again.")
 
 # Ask the user to input a user prompt if the mode is 2, otherwise use a sample input
-if mode==2:
+if mode == 2:
     user_prompt = input("Enter an user prompt (Blank input will use a sample question): ")
 
 # Start of the time
@@ -147,9 +155,9 @@ agents = []
 # gpt-4o-mini-2024-07-18 is used
 for i in range(agent_number):
     agent = Agent(
-        name=f"Agent {i+1}",
+        name=f"Agent {i + 1}",
         # If you want to add a persona to the agents, you can change the instructions here, e.g., "Pretend that you are a very creative person."
-        instructions=f"You are agent {i+1}. You are one of the agents in a multi-agent system.",
+        instructions=f"You are agent {i + 1}. You are one of the agents in a multi-agent system.",
         # You can specify a model by adding attribute like this model="gpt-3.5-turbo",
         model="gpt-4o-mini-2024-07-18",
     )
@@ -187,7 +195,7 @@ instruction_debate_2 = "Use these opinions carefully as additional advice, and p
 
 # Conditional Branch depends on the mode:
 # If mode is 1, run a benchmark, if mode is 2, get an user prompt
-if mode==1:
+if mode == 1:
     # Re-define the aggregator and the grader
     # The aggregator: This is used to aggregate the responses of agents in the final round.
     # gpt-4o-mini-2024-07-18 is used
@@ -218,7 +226,7 @@ if mode==1:
     # This is required for debugging and checking the input side history
     all_inputs = []
     for k in range(len(questions)):
-        print(f"No. {k+1} Question initiated")
+        print(f"No. {k + 1} Question initiated")
         # Fetch a question and answer for the corresponding current index
         question = questions[k]
         answer = answers[k]
@@ -247,11 +255,11 @@ if mode==1:
 
         # Loop through the debates and come to a conclusion over the specified number of debate rounds
         for j in range(debate_round_number):
-            print(f"Debate round {j+1} initiated")
+            print(f"Debate round {j + 1} initiated")
             if j == 0:
                 # Loop through the agents to generate their first responses to the user input
                 for i in range(agent_number):
-                    print(f"Debate {j+1}: Agent {i+1} in progress")
+                    print(f"Debate {j + 1}: Agent {i + 1} in progress")
                     # Pass the entire conversation history to each agent
                     response = client.run(agent=agents[i], messages=user_input)
 
@@ -283,13 +291,17 @@ if mode==1:
                     last_round_others_responses = [
                         response
                         for response in conversation_history
-                        if response["round"] == j and response["question_index"] == question_index and response["name"] != agents[i].name
+                        if
+                        response["round"] == j and response["question_index"] == question_index and response["name"] !=
+                        agents[i].name
                     ]
                     # Find the current agent's last response to allow for self-reflection
                     last_round_own_response = [
                         response
                         for response in conversation_history
-                        if response["round"] == j and response["question_index"] == question_index and response["name"] == agents[i].name
+                        if
+                        response["round"] == j and response["question_index"] == question_index and response["name"] ==
+                        agents[i].name
                     ]
                     # Create a self-reflection message if the agent's previous response exists
                     if last_round_own_response:
@@ -334,7 +346,8 @@ if mode==1:
         # Aggregating the final round's responses
         instruction_aggregate = "You are going to conclude the debate by aggregating all agents' responses into a single conclusion. If it is math problem, the last of output must be this format; '#### <The numeric answer>' and this is a math problem, the answer is sole and single."
         final_round_response = [
-            response for response in conversation_history if response["round"] == debate_round_number and response["question_index"] == question_index
+            response for response in conversation_history if
+            response["round"] == debate_round_number and response["question_index"] == question_index
         ]
         final_round_response_message = "\n".join(
             [f"{resp['name']}: {resp['content']}" for resp in final_round_response]
@@ -393,21 +406,24 @@ if mode==1:
     try:
         with open(ch_filename, "w", encoding="utf-8") as f:
             json.dump(conversation_history, f, ensure_ascii=False, indent=4)
-        print(f"Conversation histories have been saved to {ch_filename}\nThere should be chains of thought of the agents.")
+        print(
+            f"Conversation histories have been saved to {ch_filename}\nThere should be chains of thought of the agents.")
     except Exception as e:
         print(f"An error occurred while saving the conversation history: {e}")
     # Save the all inputs to the file
     try:
         with open(ai_filename, "w", encoding="utf-8") as f:
             json.dump(all_inputs, f, ensure_ascii=False, indent=4)
-            print(f"Conversation histories have been saved to {ai_filename}\nThe file stores the all inputs to the agents")
+            print(
+                f"Conversation histories have been saved to {ai_filename}\nThe file stores the all inputs to the agents")
     except Exception as e:
         print(f"An error occurred while saving the conversation history: {e}")
     # Save the benchmark result to the file
     try:
         with open(result_filename, "w", encoding="utf-8") as f:
             json.dump(benchmark_result, f, ensure_ascii=False, indent=4)
-            print(f"Benchmark Result have been saved to {result_filename}.\nYou can check a result of the question, check this file.")
+            print(
+                f"Benchmark Result have been saved to {result_filename}.\nYou can check a result of the question, check this file.")
     except Exception as e:
         print(f"An error occurred while saving the benchmark result: {e}")
 
@@ -422,7 +438,7 @@ if mode==1:
     print(f"Correct Answers: {correct_count}")
     print(f"Accuracy: {accuracy:.2f}%")
 
-    if ce_flag==True:
+    if ce_flag == True:
         start_zs = time.time()
 
         # Do a comparison: gpt-4o-mini-2024-07-18
@@ -434,7 +450,7 @@ if mode==1:
 
         instruction_initial_zs = "Make sure to state your answer at the end of the response in a format of #### <Answer>."
 
-        conversation_zs =[]
+        conversation_zs = []
         results_zs = []
 
         for i in range(len(questions)):
@@ -508,7 +524,8 @@ if mode==1:
         try:
             with open(result_filename_zs, "w", encoding="utf-8") as f:
                 json.dump(results_zs, f, ensure_ascii=False, indent=4)
-                print(f"Conversation histories have been saved to {result_filename_zs}.\n If you want to check a conclusion of the question, check this file.")
+                print(
+                    f"Conversation histories have been saved to {result_filename_zs}.\n If you want to check a conclusion of the question, check this file.")
         except Exception as e:
             print(f"An error occurred while saving the benchmark result: {e}")
 
@@ -528,7 +545,8 @@ if mode==1:
     try:
         with open(summary_filename, "w", encoding="utf-8") as f:
             if ce_flag:
-                f.write(f"==== Benchmark Result {timestamp} with Comparative Experiment (Zero-Shot Single Agent) ====\n")
+                f.write(
+                    f"==== Benchmark Result {timestamp} with Comparative Experiment (Zero-Shot Single Agent) ====\n")
                 f.write("#### Multi-Agent Benchmark Summary ####\n")
                 f.write(f"Total Questions: {total_questions}\n")
                 f.write(f"Elapsed Time: {elapsed_time:.2f} seconds\n")
@@ -547,11 +565,12 @@ if mode==1:
                 f.write(f"Elapsed Time: {elapsed_time:.2f} seconds\n")
                 f.write(f"Correct Answers: {correct_count}\n")
                 f.write(f"Accuracy: {accuracy:.2f}%\n")
-            print(f"Benchmark Summary have been saved to {summary_filename}.\nYou can check the summary of the benchmark.")
+            print(
+                f"Benchmark Summary have been saved to {summary_filename}.\nYou can check the summary of the benchmark.")
     except Exception as e:
         print(f"An error occurred while saving the benchmark result summary: {e}")
 
-elif mode==2:
+elif mode == 2:
     if user_prompt:
         user_input = [
             {
@@ -663,7 +682,8 @@ elif mode==2:
     if not user_prompt:
         # Grading process
         grading_messages = [
-            {"role": "system", "content": "Compare the consensus answer in a format of **<A consensus answer>** with the answer label and determine whether it is correct ('True') or incorrect ('False'). If consensus answer has a word, you ignore them and compare numbers in the consensus answer and label. Your output must be always 'True' or 'False'."},
+            {"role": "system",
+             "content": "Compare the consensus answer in a format of **<A consensus answer>** with the answer label and determine whether it is correct ('True') or incorrect ('False'). If consensus answer has a word, you ignore them and compare numbers in the consensus answer and label. Your output must be always 'True' or 'False'."},
             {"role": "user", "content": f"Answer: {label}"},
             {"role": "assistant", "content": conclusion},
         ]
