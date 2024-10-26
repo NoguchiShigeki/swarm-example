@@ -555,6 +555,8 @@ if mode == 1:
                 f.write(
                     f"==== Benchmark Result {timestamp} with Comparative Experiment (Zero-Shot Single Agent) ====\n")
                 f.write("#### Multi-Agent Benchmark Summary ####\n")
+                f.write(f"Agents: {agent_number}\n")
+                f.write(f"Debate Rounds: {debate_round_number}\n")
                 f.write(f"Total Questions: {total_questions}\n")
                 f.write(f"Elapsed Time: {elapsed_time:.2f} seconds\n")
                 f.write(f"Correct Answers: {correct_count}\n")
@@ -568,6 +570,8 @@ if mode == 1:
             else:
                 f.write(f"==== Benchmark Result {timestamp} ====\n")
                 f.write("#### Multi-Agent Benchmark Summary ####\n")
+                f.write(f"Agents: {agent_number}\n")
+                f.write(f"Debate Rounds: {debate_round_number}\n")
                 f.write(f"Total Questions: {total_questions}\n")
                 f.write(f"Elapsed Time: {elapsed_time:.2f} seconds\n")
                 f.write(f"Correct Answers: {correct_count}\n")
@@ -751,6 +755,7 @@ elif mode == 2:
             else:
                 f.write("#### User Prompt Conclusion ####\n")
                 f.write(f"User Prompt: {user_prompt}\n")
+                f.write(f"Agents: {agent_number}, Rounds: {debate_round_number}\n")
                 f.write(f"Conclusion: {conclusion}\n")
                 f.write(f"Elapsed Time: {elapsed_time:.2f} seconds\n")
             print(
